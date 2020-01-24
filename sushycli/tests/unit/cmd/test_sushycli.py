@@ -15,10 +15,53 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
+
+import sushy
+
+from sushycli.cmd.sushycli import main
 from sushycli.tests.unit import base
 
 
+@mock.patch.object(sushy, 'Sushy', autospec=True)
 class SuchyCliTestCase(base.TestCase):
 
-    def test_main(self):
-        pass
+    def test_power_on(self, mock_sushy):
+
+        main(['power',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1',
+              'on'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_system.assert_called_once_with(
+            '/redfish/v1/Systems/1')
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.reset_system.assert_called_once_with('on')
+
+    def test_power_off(self, mock_sushy):
+
+        main(['power',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1',
+              'Off'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_system.assert_called_once_with(
+            '/redfish/v1/Systems/1')
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.reset_system.assert_called_once_with('force off')
