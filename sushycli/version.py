@@ -18,17 +18,27 @@ from sushycli.base import BaseLister
 
 
 class VersionShow(BaseLister):
-    """Read supported Redfish protocol version of remote agent"""
+    """Read supported Redfish protocol version of remote agent.
 
+    Implements `sushycli version` command.
+    """
     def get_parser(self, prog_name):
-        """Redfish version command parser"""
+        """Redfish versioin command parser.
+
+        :param prog_name: name of the cliff command being executed
+        :returns: an `argparse.ArgumentParser` instance
+        """
         parser = super(VersionShow, self).get_parser(prog_name)
 
         return parser
 
     def take_action(self, args):
-        """Redfish version command action"""
+        """Redfish version command action
 
+        :param args: a namespace of command-line option-value pairs that
+            come from the user
+        :returns: CLI process exit code
+        """
         root = super(VersionShow, self).take_action(args)
 
         return ['Version'], [[root.redfish_version]]

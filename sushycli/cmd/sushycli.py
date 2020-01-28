@@ -21,6 +21,14 @@ from cliff.commandmanager import CommandManager
 
 
 class SushyCliApp(App):
+    """Cliff application for the `sushycli` tool.
+
+    :param description: one-liner explaining the program purpose
+    :param version: application version number
+    :param command_manager: plugin loader
+    :param deferred_help: Allow subcommands to accept `–help` with allowing
+        to defer help print after initialize_app
+    """
 
     def __init__(self):
         super(SushyCliApp, self).__init__(

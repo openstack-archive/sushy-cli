@@ -31,7 +31,11 @@ class SystemPowerShow(base.BaseLister):
     """Show machine power state"""
 
     def get_parser(self, prog_name):
-        """SystemPowerShow state command parser"""
+        """Power state management command parser.
+
+        :param prog_name: name of the cliff command being executed
+        :returns: an `argparse.ArgumentParser` instance
+        """
         parser = super(SystemPowerShow, self).get_parser(prog_name)
 
         parser.add_argument(
@@ -42,8 +46,12 @@ class SystemPowerShow(base.BaseLister):
         return parser
 
     def take_action(self, args):
-        """SystemPowerShow state command action"""
+        """Power state management command action.
 
+        :param args: a namespace of command-line option-value pairs that
+            come from the user
+        :returns: CLI process exit code
+        """
         root = super(SystemPowerShow, self).take_action(args)
 
         sys_inst = root.get_system(args.system_id)
@@ -55,7 +63,11 @@ class SystemPowerSet(base.BaseCommand):
     """Change machine power state"""
 
     def get_parser(self, prog_name):
-        """SystemPowerSet state command parser"""
+        """Power state management command parser.
+
+        :param prog_name: name of the cliff command being executed
+        :returns: an `argparse.ArgumentParser` instance
+        """
         parser = super(SystemPowerSet, self).get_parser(prog_name)
 
         parser.add_argument(
@@ -73,8 +85,12 @@ class SystemPowerSet(base.BaseCommand):
         return parser
 
     def take_action(self, args):
-        """SystemPowerSet state command action"""
+        """Power state management command action.
 
+        :param args: a namespace of command-line option-value pairs that
+            come from the user
+        :returns: CLI process exit code
+        """
         root = super(SystemPowerSet, self).take_action(args)
 
         sys_inst = root.get_system(args.system_id)

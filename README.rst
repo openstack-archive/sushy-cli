@@ -1,34 +1,22 @@
-========
-sushycli
-========
 
+About Sushy CLI
+===============
 
-.. image:: https://img.shields.io/pypi/v/sushycli.svg
-        :target: https://pypi.python.org/pypi/sushycli
+Sushy CLI tool is intended to help human beings to communicate with `Redfish`_
+based baseboard management controllers (BMC).
 
-.. image:: https://img.shields.io/travis/khansaAmrouni/sushycli.svg
-        :target: https://travis-ci.org/khansaAmrouni/sushycli
+BMCs offer powerful means of controlling bare metal machines. For example, one
+can flip machine power, change BIOS configuration or even flash the firmware.
 
-.. image:: https://readthedocs.org/projects/sushycli/badge/?version=latest
-        :target: https://sushycli.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
+The `sushycli` tool offers a friendly command-line interface to some of the BMC
+features. It's main audience include software developers working on bare metal
+management automation and system administrators handling the raw iron with bare
+hands.
 
+* Free software: Apache license
+* Documentation: https://docs.openstack.org/sushy-cli/latest/
+* Usage: https://docs.openstack.org/sushy-cli/latest/reference/usage.html
+* Source: https://opendev.org/openstack/sushy-cli
+* Bugs: https://storyboard.openstack.org/#!/project/960
 
-
-
-a Redfish command line interface client tool built on top of sushy library to manage Redfish BMC resources.
-
-
-* Free software: Apache Software License 2.0
-* Documentation: https://docs.openstack.org/sushycli/latest/
-
-
-Usage
---------
-
-In order to get you a copy of the project up and running on your local machine follow these steps:
-
-* Clone the project 
-* Run python setup.py install  
-* Run pip install -e . 
-
+.. _Redfish: http://www.dmtf.org/standards/redfish

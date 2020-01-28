@@ -21,6 +21,10 @@ from cliff import lister
 
 
 class BaseParserMixIn(object):
+    """Common bits and pieces of all `sushycli` commands.
+
+    Does not implement any CLI command by its own.
+    """
 
     def _add_options(self, parser):
 
@@ -41,8 +45,12 @@ class BaseParserMixIn(object):
         return parser
 
     def take_action(self, args):
-        """Common command action"""
+        """Common base for all command actions
 
+        :param args: a namespace of command-line option-value pairs that
+            come from the user
+        :returns: CLI process exit code
+        """
         root = sushy.Sushy(
             args.service_endpoint, username=args.username,
             password=args.password)
@@ -51,20 +59,28 @@ class BaseParserMixIn(object):
 
 
 class BaseCommand(BaseParserMixIn, command.Command):
-    """Common base for all sushycli commands"""
+    """Common base for all sushycli status commands"""
 
     def get_parser(self, prog_name):
-        """Common command parser"""
+        """Common base for all status command parsers.
+
+        :param prog_name: name of the cliff command being executed
+        :returns: an `argparse.ArgumentParser` instance
+        """
         parser = super(BaseCommand, self).get_parser(prog_name)
 
         return self._add_options(parser)
 
 
 class BaseLister(BaseParserMixIn, lister.Lister):
-    """Common base for all sushycli listers"""
+    """Common base for all sushycli listing commands"""
 
     def get_parser(self, prog_name):
-        """Common lister parser"""
+        """Common base for all listing command parsers.
+
+        :param prog_name: name of the cliff command being executed
+        :returns: an `argparse.ArgumentParser` instance
+        """
         parser = super(BaseLister, self).get_parser(prog_name)
 
         return self._add_options(parser)
