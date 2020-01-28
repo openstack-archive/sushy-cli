@@ -14,15 +14,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from cliff.command import Command
-import sushy
+from sushycli.base import BaseLister
 
 
-class Version(Command):
-    """A simple command that render the Redfish version"""
+class VersionShow(BaseLister):
+    """Read supported Redfish protocol version of remote agent"""
 
-    def take_action(self, parsed_args):
-        s = sushy.Sushy('http://localhost:8000/redfish/v1',
-                        username='foo', password='bar')
+    def get_parser(self, prog_name):
+        """Redfish version command parser"""
+        parser = super(VersionShow, self).get_parser(prog_name)
 
-        return s.redfish_version
+        return parser
+
+    def take_action(self, args):
+        """Redfish version command action"""
+
+        root = super(VersionShow, self).take_action(args)
+
+        return ['Version'], [[root.redfish_version]]

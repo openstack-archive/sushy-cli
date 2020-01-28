@@ -26,9 +26,62 @@ from sushycli.tests.unit import base
 @mock.patch.object(sushy, 'Sushy', autospec=True)
 class SuchyCliTestCase(base.TestCase):
 
-    def test_power_on(self, mock_sushy):
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_version(self, mock_write, mock_sushy):
 
-        main(['power',
+        mock_root = mock_sushy.return_value
+
+        mock_root.redfish_version = '1.2.3'
+
+        main(['version', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calles = [
+            mock.call('+---------+\n'
+                      '| Version |'
+                      '\n+---------+\n'
+                      '| 1.2.3   |\n'
+                      '+---------+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calles)
+
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_system_power_show(self, mock_write, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.power_state = 'on'
+
+        main(['system', 'power', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calles = [
+            mock.call('+-------------+\n'
+                      '| Power state |\n'
+                      '+-------------+\n'
+                      '| on          |\n'
+                      '+-------------+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calles)
+
+    def test_system_power_on(self, mock_sushy):
+
+        main(['system', 'power',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1',
@@ -46,9 +99,9 @@ class SuchyCliTestCase(base.TestCase):
 
         mock_system.reset_system.assert_called_once_with('on')
 
-    def test_power_off(self, mock_sushy):
+    def test_system_power_off(self, mock_sushy):
 
-        main(['power',
+        main(['system', 'power',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1',
