@@ -52,6 +52,66 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
+    def test_system_boot_show(self, mock_write, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.boot.mode = 'Disabled'
+        mock_system.boot.allowed_values = ['Pxe', 'Cd', 'Hdd']
+        mock_gasbsv = mock_system.get_allowed_system_boot_source_values
+        mock_gasbsv.return_value = {'hdd', 'pxe', 'cd'}
+        mock_system.boot.target = 'Hdd'
+
+        main(['system', 'boot', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calls = [
+            mock.call('+-----------+----------------------+-------------+----'
+                      '--------------------+\n| Boot mode | Available boot mo'
+                      'des | Boot device | Available boot devices |\n+-------'
+                      '----+----------------------+-------------+------------'
+                      '------------+\n| Disabled  | Cd, Hdd, Pxe         | Hd'
+                      'd         | cd, hdd, pxe           |\n+-----------+---'
+                      '-------------------+-------------+--------------------'
+                      '----+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calls)
+
+    def test_system_boot_set(self, mock_sushy):
+
+        main(['system', 'boot', 'set',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1',
+              '--target', 'cd',
+              '--enabled', 'once',
+              '--mode', 'uefi'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_system.assert_called_once_with(
+            '/redfish/v1/Systems/1')
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.set_system_boot_source.\
+            assert_called_once_with(sushy.BOOT_SOURCE_TARGET_CD,
+                                    enabled=sushy.BOOT_SOURCE_ENABLED_ONCE,
+                                    mode=sushy.BOOT_SOURCE_MODE_UEFI)
+
+    @mock.patch('sys.stdout.write', autospec=True)
     def test_chassis_inventory_show(self, mock_write, mock_sushy):
 
         mock_root = mock_sushy.return_value
