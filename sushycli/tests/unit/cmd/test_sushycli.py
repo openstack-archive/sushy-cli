@@ -131,6 +131,116 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
+    def test_system_list(self, mock_write, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_system = mock.MagicMock()
+
+        mock_system.identity = 'A'
+        mock_system.name = 'B'
+        mock_system.uuid = '38947555-7742-3448-3784-823347823834'
+        mock_system.path = '/redfish/v1/Systems/437XR1138R2'
+
+        mock_systems = mock_root.get_system_collection.return_value
+        mock_systems.get_members.return_value = [mock_system]
+        mock_root.get_system.return_value = mock_system
+
+        main(['system', 'list',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calls = [
+            mock.call('+------+--------------------------------------+------'
+                      '---------------------------+\n| Name | Identity      '
+                      '                       | System ID                   '
+                      '    |\n+------+--------------------------------------'
+                      '+---------------------------------+\n| B    | 3894755'
+                      '5-7742-3448-3784-823347823834 | /redfish/v1/Systems/4'
+                      '37XR1138R2 |\n+------+-------------------------------'
+                      '-------+---------------------------------+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calls)
+
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_manager_list(self, mock_write, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_manager = mock.MagicMock()
+
+        mock_manager.identity = 'A'
+        mock_manager.name = 'B'
+        mock_manager.uuid = '38947555-7742-3448-3784-823347823834'
+        mock_manager.path = '/redfish/v1/Managers/BMC'
+
+        mock_managers = mock_root.get_manager_collection.return_value
+        mock_managers.get_members.return_value = [mock_manager]
+        mock_root.get_manager.return_value = mock_manager
+
+        main(['manager', 'list',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calls = [
+            mock.call('+------+--------------------------------------+------'
+                      '--------------------+\n| Name | Identity             '
+                      '                | Manager ID               |\n+------'
+                      '+--------------------------------------+-------------'
+                      '-------------+\n| B    | 38947555-7742-3448-3784-8233'
+                      '47823834 | /redfish/v1/Managers/BMC |\n+------+------'
+                      '--------------------------------+--------------------'
+                      '------+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calls)
+
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_chassis_list(self, mock_write, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_one_chassis = mock.MagicMock()
+
+        mock_one_chassis.identity = 'A'
+        mock_one_chassis.name = 'B'
+        mock_one_chassis.uuid = '38947555-7742-3448-3784-823347823834'
+        mock_one_chassis.path = '/redfish/v1/Chassis/1U'
+
+        mock_chassis = mock_root.get_chassis_collection.return_value
+        mock_chassis.get_members.return_value = [mock_one_chassis]
+        mock_root.get_chassis.return_value = mock_one_chassis
+
+        main(['chassis', 'list',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calls = [
+            mock.call('+------+--------------------------------------+------'
+                      '------------------+\n| Name | Identity               '
+                      '              | Chassis ID             |\n+------+---'
+                      '-----------------------------------+-----------------'
+                      '-------+\n| B    | 38947555-7742-3448-3784-8233478238'
+                      '34 | /redfish/v1/Chassis/1U |\n+------+--------------'
+                      '------------------------+------------------------+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calls)
+
+    @mock.patch('sys.stdout.write', autospec=True)
     def test_system_inventory_show(self, mock_write, mock_sushy):
 
         mock_root = mock_sushy.return_value
