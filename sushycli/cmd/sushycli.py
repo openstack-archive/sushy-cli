@@ -24,11 +24,10 @@ class SushyCliApp(App):
 
     def __init__(self):
         super(SushyCliApp, self).__init__(
-            description='a Redfish CLI client for sushy library ',
+            description='Redfish CLI based on sushy library',
             version='0.1',
-            command_manager=CommandManager('sushy.cli'),
-            deferred_help=True,
-            )
+            command_manager=CommandManager('sushycli'),
+            deferred_help=True)
 
     def initialize_app(self, argv):
         self.LOG.debug('initialize_app')
