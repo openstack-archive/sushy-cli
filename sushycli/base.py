@@ -17,14 +17,12 @@
 import sushy
 
 from cliff import command
+from cliff import lister
 
 
-class Power(command.Command):
-    """Change machine power state"""
+class BaseParserMixIn(object):
 
-    def get_parser(self, prog_name):
-        """Power state command parser"""
-        parser = super(Power, self).get_parser(prog_name)
+    def _add_options(self, parser):
 
         parser.add_argument(
             '--username',
@@ -40,35 +38,33 @@ class Power(command.Command):
             help='Redfish BMC service endpoint URL e.g. '
                  'http://localhost:8000')
 
-        parser.add_argument(
-            '--system-id',
-            required=True,
-            help='The canonical path to the ComputerSystem '
-                 'resource that the driver will interact with. '
-                 'It should include the root service, version and '
-                 'the unique resource path to a ComputerSystem. '
-                 'For example: /redfish/v1/Systems/1')
-
-        parser.add_argument(
-            'state',
-            metavar='on|off',
-            type=lambda x: x.lower(),
-            choices=['on', 'off'],
-            help='Set machine power state')
-
         return parser
 
     def take_action(self, args):
-        """Power state command action"""
+        """Common command action"""
 
         root = sushy.Sushy(
             args.service_endpoint, username=args.username,
             password=args.password)
 
-        sys_inst = root.get_system(args.system_id)
+        return root
 
-        sys_inst.reset_system(
-            sushy.RESET_TYPE_ON
-            if args.state == 'on' else sushy.RESET_TYPE_FORCE_OFF)
 
-        return 0
+class BaseCommand(BaseParserMixIn, command.Command):
+    """Common base for all sushycli commands"""
+
+    def get_parser(self, prog_name):
+        """Common command parser"""
+        parser = super(BaseCommand, self).get_parser(prog_name)
+
+        return self._add_options(parser)
+
+
+class BaseLister(BaseParserMixIn, lister.Lister):
+    """Common base for all sushycli listers"""
+
+    def get_parser(self, prog_name):
+        """Common lister parser"""
+        parser = super(BaseLister, self).get_parser(prog_name)
+
+        return self._add_options(parser)
