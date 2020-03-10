@@ -27,6 +27,28 @@ from sushycli.tests.unit import base
 class SuchyCliTestCase(base.TestCase):
 
     @mock.patch('sys.stdout.write', autospec=True)
+    def test_insecure(self, mock_write, mock_sushy):
+
+        main(['version', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me', '--insecure'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly', verify=False)
+
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_tls_certificate(self, mock_write, mock_sushy):
+
+        main(['version', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--tls-certificate', '/dev/null'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly',
+            verify='/dev/null')
+
+    @mock.patch('sys.stdout.write', autospec=True)
     def test_version(self, mock_write, mock_sushy):
 
         mock_root = mock_sushy.return_value
