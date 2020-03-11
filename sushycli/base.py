@@ -14,11 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import sushy
-import urllib3
+from urllib.parse import urlsplit
+from urllib.parse import urlunsplit
 
 from cliff import command
 from cliff import lister
+import sushy
+import urllib3
 
 
 class BaseParserMixIn(object):
@@ -40,8 +42,9 @@ class BaseParserMixIn(object):
         parser.add_argument(
             '--service-endpoint',
             required=True,
-            help='Redfish BMC service endpoint URL e.g. '
-                 'http://localhost:8000')
+            help='Redfish BMC service endpoint URL (e.g. '
+                 'http://localhost:8000). If location part of the URL is not '
+                 'specified, it defaults to `/redfish/v1`.')
 
         parser.add_argument(
             '--insecure', action='store_true',
@@ -61,12 +64,21 @@ class BaseParserMixIn(object):
             come from the user
         :returns: CLI process exit code
         """
-        if args.insecure:
-            urllib3.disable_warnings(
-                urllib3.exceptions.InsecureRequestWarning)
+        url = urlsplit(args.service_endpoint, scheme='http')
+
+        address = []
+        path = []
+
+        for idx, component in enumerate(url):
+            if idx < 2:
+                address.append(component)
+                path.append('')
+            else:
+                address.append('')
+                path.append(component)
 
         kwargs = {
-            'base_url': args.service_endpoint,
+            'base_url': urlunsplit(address),
             'username': args.username,
             'password': args.password,
         }
@@ -74,6 +86,10 @@ class BaseParserMixIn(object):
         verify = args.tls_certificates or not args.insecure
         if verify is not True:
             kwargs.update(verify=verify)
+
+        path = urlunsplit(path)
+        if path:
+            kwargs.update(root_prefix=path)
 
         if args.insecure:
             urllib3.disable_warnings(
