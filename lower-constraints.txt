@@ -16,6 +16,6 @@ Sphinx==1.6.2
 sphinxcontrib-websupport==1.0.1
 stevedore==1.29.0
 stestr==2.0.0
-sushy==3.1.0
+sushy==3.2.0
 testtools==2.2.0
 urllib3==1.22

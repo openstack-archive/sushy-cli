@@ -15,12 +15,16 @@
 # under the License.
 
 import argparse
+import json
+import sys
+
 from urllib.parse import urlsplit
 from urllib.parse import urlunsplit
 
 from cliff import command
 from cliff import lister
 import sushy
+from sushy import connector
 import urllib3
 
 
@@ -56,7 +60,56 @@ class BaseParserMixIn(object):
             help='Path to a CA bundle or a directory containing trusted '
                  'TLS certificates.')
 
+        parser.add_argument(
+            '--show-traffic',
+            action='store_true',
+            help='Show Redfish HTTP message exchange.')
+
         return parser
+
+    def _to_json(self, data):
+        """Turn input object into JSON when possible.
+
+        :param data: object to jsonize
+        :type data: dict or str or None
+        """
+        if not data:
+            data = {}
+
+        elif isinstance(data, (str, bytes)):
+            try:
+                data = json.loads(data)
+
+            except json.JSONDecodeError as exc:
+                self.app.LOG.error(
+                    'Malformed JSON document %(doc)s: %(error)s',
+                    {'doc': data, 'error': exc})
+                data = {}
+
+        else:
+            data = dict(data)
+
+        return json.dumps(data, indent=2)
+
+    def observer(self, response):
+        """Pretty print HTTP request and response details.
+
+        :param response: HTTP response object
+        :type response: requests.Response
+        """
+        sys.stdout.write(
+            '%s %s\n%s\n%s\n' % (
+                response.request.method, response.request.url,
+                self._to_json(response.request.headers),
+                self._to_json(response.request.body)))
+
+        sys.stdout.write(
+            '%s %s\n%s\n%s\n' % (
+                response.reason, response.status_code,
+                self._to_json(response.headers),
+                self._to_json(response.text)))
+
+        sys.stdout.flush()
 
     def take_action(self, args):
         """Common base for all command actions
@@ -78,8 +131,10 @@ class BaseParserMixIn(object):
                 address.append('')
                 path.append(component)
 
+        base_url = urlunsplit(address)
+
         kwargs = {
-            'base_url': urlunsplit(address),
+            'base_url': base_url,
             'username': args.username,
             'password': args.password,
         }
@@ -95,6 +150,12 @@ class BaseParserMixIn(object):
         if args.insecure:
             urllib3.disable_warnings(
                 urllib3.exceptions.InsecureRequestWarning)
+
+        conn = connector.Connector(
+            base_url, verify=verify,
+            response_callback=args.show_traffic and self.observer)
+
+        kwargs.update(connector=conn)
 
         return sushy.Sushy(**kwargs)
 

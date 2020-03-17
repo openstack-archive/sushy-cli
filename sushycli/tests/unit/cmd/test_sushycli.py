@@ -24,53 +24,95 @@ from sushycli.tests.unit import base
 
 
 @mock.patch.object(sushy, 'Sushy', autospec=True)
+@mock.patch.object(sushy.connector, 'Connector', autospec=True)
 class SuchyCliTestCase(base.TestCase):
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_insecure(self, mock_write, mock_sushy):
+    def test_show_traffic(self, mock_write, mock_connector, mock_sushy):
+
+        main(['version', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me', '--show-traffic'])
+
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=mock.ANY, verify=True)
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
+
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_insecure(self, mock_write, mock_connector, mock_sushy):
 
         main(['version', 'show',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me', '--insecure'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=False)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly', verify=False)
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly', verify=False)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_tls_certificate(self, mock_write, mock_sushy):
+    def test_tls_certificate(self, mock_write, mock_connector, mock_sushy):
 
         main(['version', 'show',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me',
               '--tls-certificate', '/dev/null'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify='/dev/null')
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly',
-            verify='/dev/null')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly', verify='/dev/null')
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_service_endpoint_default(self, mock_write, mock_sushy):
+    def test_service_endpoint_default(
+            self, mock_write, mock_connector, mock_sushy):
 
         main(['version', 'show',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_service_endpoint_mounted(self, mock_write, mock_sushy):
+    def test_service_endpoint_mounted(
+            self, mock_write, mock_connector, mock_sushy):
 
         main(['version', 'show',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me:1234/out'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me:1234', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me:1234', password='fish', username='jelly',
+            'http://fish.me:1234', connector=mock_connection,
+            password='fish', username='jelly',
             root_prefix='/out')
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_version(self, mock_write, mock_sushy):
+    def test_version(self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -80,8 +122,14 @@ class SuchyCliTestCase(base.TestCase):
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+---------+\n'
@@ -95,7 +143,8 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_manager_vmedia_list(self, mock_write, mock_sushy):
+    def test_manager_vmedia_list(
+            self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -114,8 +163,14 @@ class SuchyCliTestCase(base.TestCase):
               '--service-endpoint', 'http://fish.me',
               '--manager-id', '/redfish/v1/Managers/BMC'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+-----------------------------------------'
@@ -135,7 +190,7 @@ class SuchyCliTestCase(base.TestCase):
 
         mock_write.assert_has_calls(expected_calls)
 
-    def test_manager_vmedia_insert(self, mock_sushy):
+    def test_manager_vmedia_insert(self, mock_connector, mock_sushy):
 
         main(['manager', 'vmedia', 'insert',
               '--username', 'jelly', '--password', 'fish',
@@ -144,8 +199,14 @@ class SuchyCliTestCase(base.TestCase):
               '--device-id', '/redfish/v1/Managers/BMC/VirtualMedia/Cd',
               '--image', 'http://fish.me/fishiso.iso'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         mock_root = mock_sushy.return_value
 
@@ -159,7 +220,7 @@ class SuchyCliTestCase(base.TestCase):
         mock_vmedia.insert_media.\
             assert_called_once_with('http://fish.me/fishiso.iso')
 
-    def test_manager_vmedia_eject(self, mock_sushy):
+    def test_manager_vmedia_eject(self, mock_connector, mock_sushy):
 
         main(['manager', 'vmedia', 'eject',
               '--username', 'jelly', '--password', 'fish',
@@ -167,8 +228,14 @@ class SuchyCliTestCase(base.TestCase):
               '--manager-id', '/redfish/v1/Managers/BMC',
               '--device-id', '/redfish/v1/Managers/BMC/VirtualMedia/Cd'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         mock_root = mock_sushy.return_value
 
@@ -182,7 +249,7 @@ class SuchyCliTestCase(base.TestCase):
         mock_vmedia.eject_media.assert_called_once()
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_system_boot_show(self, mock_write, mock_sushy):
+    def test_system_boot_show(self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -199,8 +266,14 @@ class SuchyCliTestCase(base.TestCase):
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+-----------+----------------------+-------------+----'
@@ -217,7 +290,7 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_system_bios_show(self, mock_write, mock_sushy):
+    def test_system_bios_show(self, mock_write, mock_connector, mock_sushy):
         mock_root = mock_sushy.return_value
 
         mock_system = mock_root.get_system.return_value
@@ -232,8 +305,14 @@ class SuchyCliTestCase(base.TestCase):
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+----------------+-------------+\n'
@@ -249,14 +328,21 @@ class SuchyCliTestCase(base.TestCase):
 
         mock_write.assert_has_calls(expected_calls)
 
-    def test_system_bios_reset(self, mock_sushy):
+    def test_system_bios_reset(self, mock_connector, mock_sushy):
 
         main(['system', 'bios', 'reset',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1'])
+
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         mock_root = mock_sushy.return_value
 
@@ -267,7 +353,7 @@ class SuchyCliTestCase(base.TestCase):
 
         mock_system.bios.reset_bios.assert_called_once()
 
-    def test_system_bios_set(self, mock_sushy):
+    def test_system_bios_set(self, mock_connector, mock_sushy):
 
         main(['system', 'bios', 'set',
               '--username', 'jelly', '--password', 'fish',
@@ -275,8 +361,15 @@ class SuchyCliTestCase(base.TestCase):
               '--system-id', '/redfish/v1/Systems/1',
               'BootMode=Uefi', 'EmbeddedSata=Raid',
               'NicBoot1=NetworkBoot', 'ProcTurboMode=Enabled'])
+
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         mock_root = mock_sushy.return_value
 
@@ -294,15 +387,23 @@ class SuchyCliTestCase(base.TestCase):
             }
         )
 
-    def test_system_bios_set_with_keys_blanks(self, mock_sushy):
+    def test_system_bios_set_with_keys_blanks(
+            self, mock_connector, mock_sushy):
 
         main(['system', 'bios', 'set',
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1',
               'BootMode  =Uefi', '  EmbeddedSata=Raid'])
+
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         mock_root = mock_sushy.return_value
 
@@ -318,7 +419,7 @@ class SuchyCliTestCase(base.TestCase):
             }
         )
 
-    def test_system_boot_set(self, mock_sushy):
+    def test_system_boot_set(self, mock_connector, mock_sushy):
 
         main(['system', 'boot', 'set',
               '--username', 'jelly', '--password', 'fish',
@@ -328,8 +429,14 @@ class SuchyCliTestCase(base.TestCase):
               '--enabled', 'once',
               '--mode', 'uefi'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         mock_root = mock_sushy.return_value
 
@@ -344,7 +451,8 @@ class SuchyCliTestCase(base.TestCase):
                                     mode=sushy.BOOT_SOURCE_MODE_UEFI)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_chassis_inventory_show(self, mock_write, mock_sushy):
+    def test_chassis_inventory_show(
+            self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -365,8 +473,14 @@ class SuchyCliTestCase(base.TestCase):
               '--service-endpoint', 'http://fish.me',
               '--chassis-id', '/redfish/v1/Chassis/1U'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+----------+------+-------------+--------------+-----'
@@ -386,7 +500,8 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_manager_inventory_show(self, mock_write, mock_sushy):
+    def test_manager_inventory_show(
+            self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -407,8 +522,14 @@ class SuchyCliTestCase(base.TestCase):
               '--service-endpoint', 'http://fish.me',
               '--manager-id', '/redfish/v1/Mnagers/BMC'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
 
@@ -423,7 +544,7 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_system_list(self, mock_write, mock_sushy):
+    def test_system_list(self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -442,8 +563,14 @@ class SuchyCliTestCase(base.TestCase):
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+------+--------------------------------------+------'
@@ -460,7 +587,7 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_manager_list(self, mock_write, mock_sushy):
+    def test_manager_list(self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -479,8 +606,14 @@ class SuchyCliTestCase(base.TestCase):
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+------+--------------------------------------+------'
@@ -497,7 +630,7 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_chassis_list(self, mock_write, mock_sushy):
+    def test_chassis_list(self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -516,8 +649,14 @@ class SuchyCliTestCase(base.TestCase):
               '--username', 'jelly', '--password', 'fish',
               '--service-endpoint', 'http://fish.me'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+------+--------------------------------------+------'
@@ -533,7 +672,8 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_system_inventory_show(self, mock_write, mock_sushy):
+    def test_system_inventory_show(
+            self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -554,8 +694,14 @@ class SuchyCliTestCase(base.TestCase):
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+----------+------+-------------+--------------+-----'
@@ -575,7 +721,7 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
-    def test_system_power_show(self, mock_write, mock_sushy):
+    def test_system_power_show(self, mock_write, mock_connector, mock_sushy):
 
         mock_root = mock_sushy.return_value
 
@@ -588,8 +734,14 @@ class SuchyCliTestCase(base.TestCase):
               '--service-endpoint', 'http://fish.me',
               '--system-id', '/redfish/v1/Systems/1'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
         expected_calls = [
             mock.call('+-------------+\n'
@@ -602,7 +754,13 @@ class SuchyCliTestCase(base.TestCase):
 
         mock_write.assert_has_calls(expected_calls)
 
-    def test_system_power_on(self, mock_sushy):
+    def test_system_power_on(self, mock_connector, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.power_state = 'off'
 
         main(['system', 'power',
               '--username', 'jelly', '--password', 'fish',
@@ -610,19 +768,28 @@ class SuchyCliTestCase(base.TestCase):
               '--system-id', '/redfish/v1/Systems/1',
               'on'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
-        mock_root = mock_sushy.return_value
-
-        mock_root.get_system.assert_called_once_with(
-            '/redfish/v1/Systems/1')
+        mock_root.get_system.assert_called_once_with('/redfish/v1/Systems/1')
 
         mock_system = mock_root.get_system.return_value
 
         mock_system.reset_system.assert_called_once_with('on')
 
-    def test_system_power_off(self, mock_sushy):
+    def test_system_power_off(self, mock_connector, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.power_state = 'on'
 
         main(['system', 'power',
               '--username', 'jelly', '--password', 'fish',
@@ -630,13 +797,16 @@ class SuchyCliTestCase(base.TestCase):
               '--system-id', '/redfish/v1/Systems/1',
               'Off'])
 
+        mock_connection = mock_connector.return_value
+
+        mock_connector.assert_called_once_with(
+            'http://fish.me', response_callback=False, verify=True)
+
         mock_sushy.assert_called_once_with(
-            'http://fish.me', password='fish', username='jelly')
+            'http://fish.me', connector=mock_connection,
+            password='fish', username='jelly')
 
-        mock_root = mock_sushy.return_value
-
-        mock_root.get_system.assert_called_once_with(
-            '/redfish/v1/Systems/1')
+        mock_root.get_system.assert_called_once_with('/redfish/v1/Systems/1')
 
         mock_system = mock_root.get_system.return_value
 
