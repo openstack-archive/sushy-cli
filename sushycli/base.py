@@ -15,6 +15,7 @@
 # under the License.
 
 import sushy
+import urllib3
 
 from cliff import command
 from cliff import lister
@@ -42,6 +43,15 @@ class BaseParserMixIn(object):
             help='Redfish BMC service endpoint URL e.g. '
                  'http://localhost:8000')
 
+        parser.add_argument(
+            '--insecure', action='store_true',
+            help='Do not verify server TLS certificate')
+
+        parser.add_argument(
+            '--tls-certificates', metavar='<FILE|DIR>',
+            help='Path to a CA bundle or a directory containing trusted '
+                 'TLS certificates.')
+
         return parser
 
     def take_action(self, args):
@@ -51,11 +61,25 @@ class BaseParserMixIn(object):
             come from the user
         :returns: CLI process exit code
         """
-        root = sushy.Sushy(
-            args.service_endpoint, username=args.username,
-            password=args.password)
+        if args.insecure:
+            urllib3.disable_warnings(
+                urllib3.exceptions.InsecureRequestWarning)
 
-        return root
+        kwargs = {
+            'base_url': args.service_endpoint,
+            'username': args.username,
+            'password': args.password,
+        }
+
+        verify = args.tls_certificates or not args.insecure
+        if verify is not True:
+            kwargs.update(verify=verify)
+
+        if args.insecure:
+            urllib3.disable_warnings(
+                urllib3.exceptions.InsecureRequestWarning)
+
+        return sushy.Sushy(**kwargs)
 
 
 class BaseCommand(BaseParserMixIn, command.Command):
