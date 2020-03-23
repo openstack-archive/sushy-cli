@@ -16,34 +16,11 @@
 
 import sushy
 
-from sushycli import base
+from sushycli import base_system
 
 
-SYSTEM_ID_HELP = (
-    'The canonical path to the ComputerSystem resource that the driver '
-    'will interact with. It should include the root service, version and '
-    'the unique resource path to a ComputerSystem. For example: '
-    '/redfish/v1/Systems/1'
-)
-
-
-class SystemPowerShow(base.BaseLister):
+class SystemPowerShow(base_system.BaseLister):
     """Show machine power state"""
-
-    def get_parser(self, prog_name):
-        """Power state management command parser.
-
-        :param prog_name: name of the cliff command being executed
-        :returns: an `argparse.ArgumentParser` instance
-        """
-        parser = super(SystemPowerShow, self).get_parser(prog_name)
-
-        parser.add_argument(
-            '--system-id',
-            required=True,
-            help=SYSTEM_ID_HELP)
-
-        return parser
 
     def take_action(self, args):
         """Power state management command action.
@@ -59,7 +36,7 @@ class SystemPowerShow(base.BaseLister):
         return ['Power state'], [[sys_inst.power_state]]
 
 
-class SystemPowerSet(base.BaseCommand):
+class SystemPowerSet(base_system.BaseCommand):
     """Change machine power state"""
 
     def get_parser(self, prog_name):
@@ -69,11 +46,6 @@ class SystemPowerSet(base.BaseCommand):
         :returns: an `argparse.ArgumentParser` instance
         """
         parser = super(SystemPowerSet, self).get_parser(prog_name)
-
-        parser.add_argument(
-            '--system-id',
-            required=True,
-            help=SYSTEM_ID_HELP)
 
         parser.add_argument(
             'state',

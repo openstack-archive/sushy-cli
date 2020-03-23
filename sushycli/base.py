@@ -26,7 +26,7 @@ class BaseParserMixIn(object):
     Does not implement any CLI command by its own.
     """
 
-    def _add_options(self, parser):
+    def add_parser_options(self, parser):
 
         parser.add_argument(
             '--username',
@@ -69,7 +69,7 @@ class BaseCommand(BaseParserMixIn, command.Command):
         """
         parser = super(BaseCommand, self).get_parser(prog_name)
 
-        return self._add_options(parser)
+        return self.add_parser_options(parser)
 
 
 class BaseLister(BaseParserMixIn, lister.Lister):
@@ -83,4 +83,4 @@ class BaseLister(BaseParserMixIn, lister.Lister):
         """
         parser = super(BaseLister, self).get_parser(prog_name)
 
-        return self._add_options(parser)
+        return self.add_parser_options(parser)
