@@ -49,6 +49,27 @@ class SuchyCliTestCase(base.TestCase):
             verify='/dev/null')
 
     @mock.patch('sys.stdout.write', autospec=True)
+    def test_service_endpoint_default(self, mock_write, mock_sushy):
+
+        main(['version', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_service_endpoint_mounted(self, mock_write, mock_sushy):
+
+        main(['version', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me:1234/out'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me:1234', password='fish', username='jelly',
+            root_prefix='/out')
+
+    @mock.patch('sys.stdout.write', autospec=True)
     def test_version(self, mock_write, mock_sushy):
 
         mock_root = mock_sushy.return_value
