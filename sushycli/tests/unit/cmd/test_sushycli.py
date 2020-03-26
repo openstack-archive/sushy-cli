@@ -216,6 +216,108 @@ class SuchyCliTestCase(base.TestCase):
 
         mock_write.assert_has_calls(expected_calls)
 
+    @mock.patch('sys.stdout.write', autospec=True)
+    def test_system_bios_show(self, mock_write, mock_sushy):
+        mock_root = mock_sushy.return_value
+
+        mock_system = mock_root.get_system.return_value
+        mock_system.bios.description = None
+        mock_system.bios.attributes = {'BootMode': 'Uefi',
+                                       'EmbeddedSata': 'Raid',
+                                       'NicBoot1': 'NetworkBoot',
+                                       'ProcTurboMode': 'Enabled'}
+
+        main(['system', 'bios', 'show',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calls = [
+            mock.call('+----------------+-------------+\n'
+                      '| BIOS attribute | BIOS value  |\n'
+                      '+----------------+-------------+\n'
+                      '| BootMode       | Uefi        |\n'
+                      '| EmbeddedSata   | Raid        |\n'
+                      '| NicBoot1       | NetworkBoot |\n'
+                      '| ProcTurboMode  | Enabled     |\n'
+                      '+----------------+-------------+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calls)
+
+    def test_system_bios_reset(self, mock_sushy):
+
+        main(['system', 'bios', 'reset',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1'])
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_system.assert_called_once_with(
+            '/redfish/v1/Systems/1')
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.bios.reset_bios.assert_called_once()
+
+    def test_system_bios_set(self, mock_sushy):
+
+        main(['system', 'bios', 'set',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1',
+              'BootMode=Uefi', 'EmbeddedSata=Raid',
+              'NicBoot1=NetworkBoot', 'ProcTurboMode=Enabled'])
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_system.assert_called_once_with(
+            '/redfish/v1/Systems/1')
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.bios.set_attributes.assert_called_once_with(
+            {
+                "BootMode": "Uefi",
+                "EmbeddedSata": "Raid",
+                "NicBoot1": "NetworkBoot",
+                "ProcTurboMode": "Enabled"
+            }
+        )
+
+    def test_system_bios_set_with_keys_blanks(self, mock_sushy):
+
+        main(['system', 'bios', 'set',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--system-id', '/redfish/v1/Systems/1',
+              'BootMode  =Uefi', '  EmbeddedSata=Raid'])
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_system.assert_called_once_with(
+            '/redfish/v1/Systems/1')
+
+        mock_system = mock_root.get_system.return_value
+
+        mock_system.bios.set_attributes.assert_called_once_with(
+            {
+                "BootMode": "Uefi",
+                "EmbeddedSata": "Raid",
+            }
+        )
+
     def test_system_boot_set(self, mock_sushy):
 
         main(['system', 'boot', 'set',
