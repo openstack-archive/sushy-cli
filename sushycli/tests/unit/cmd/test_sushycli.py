@@ -95,6 +95,93 @@ class SuchyCliTestCase(base.TestCase):
         mock_write.assert_has_calls(expected_calls)
 
     @mock.patch('sys.stdout.write', autospec=True)
+    def test_manager_vmedia_list(self, mock_write, mock_sushy):
+
+        mock_root = mock_sushy.return_value
+
+        mock_manager = mock_root.get_manager.return_value
+
+        mock_manager.virtual_media.\
+            members_identities = (
+                '/redfish/v1/Managers/58893887-8974-2487-2389-841168418919/'
+                'VirtualMedia/Cd',
+                '/redfish/v1/Managers/58893887-8974-2487-2389-841168418919/'
+                'VirtualMedia/Floppy'
+            )
+
+        main(['manager', 'vmedia', 'list',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--manager-id', '/redfish/v1/Managers/BMC'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        expected_calls = [
+            mock.call('+-----------------------------------------'
+                      '--------------------------------------+\n'
+                      '| Virtual Media ID                       '
+                      '                                       |\n'
+                      '+-----------------------------------------'
+                      '--------------------------------------+\n'
+                      '| /redfish/v1/Managers/58893887-8974-2487-'
+                      '2389-841168418919/VirtualMedia/Cd     |\n'
+                      '| /redfish/v1/Managers/58893887-8974-2487-'
+                      '2389-841168418919/VirtualMedia/Floppy |\n'
+                      '+----------------------------------------'
+                      '---------------------------------------+'),
+            mock.call('\n')
+        ]
+
+        mock_write.assert_has_calls(expected_calls)
+
+    def test_manager_vmedia_insert(self, mock_sushy):
+
+        main(['manager', 'vmedia', 'insert',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--manager-id', '/redfish/v1/Managers/BMC',
+              '--device-id', '/redfish/v1/Managers/BMC/VirtualMedia/Cd',
+              '--image', 'http://fish.me/fishiso.iso'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_manager.assert_called_once_with(
+            '/redfish/v1/Managers/BMC')
+
+        mock_manager = mock_root.get_manager.return_value
+
+        mock_vmedia = mock_manager.virtual_media.\
+            get_member('/redfish/v1/Managers/BMC/VirtualMedia/Cd')
+        mock_vmedia.insert_media.\
+            assert_called_once_with('http://fish.me/fishiso.iso')
+
+    def test_manager_vmedia_eject(self, mock_sushy):
+
+        main(['manager', 'vmedia', 'eject',
+              '--username', 'jelly', '--password', 'fish',
+              '--service-endpoint', 'http://fish.me',
+              '--manager-id', '/redfish/v1/Managers/BMC',
+              '--device-id', '/redfish/v1/Managers/BMC/VirtualMedia/Cd'])
+
+        mock_sushy.assert_called_once_with(
+            'http://fish.me', password='fish', username='jelly')
+
+        mock_root = mock_sushy.return_value
+
+        mock_root.get_manager.assert_called_once_with(
+            '/redfish/v1/Managers/BMC')
+
+        mock_manager = mock_root.get_manager.return_value
+
+        mock_vmedia = mock_manager.virtual_media\
+            .get_member('/redfish/v1/Managers/BMC/VirtualMedia/Cd')
+        mock_vmedia.eject_media.assert_called_once()
+
+    @mock.patch('sys.stdout.write', autospec=True)
     def test_system_boot_show(self, mock_write, mock_sushy):
 
         mock_root = mock_sushy.return_value

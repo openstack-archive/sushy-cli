@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import argparse
 from urllib.parse import urlsplit
 from urllib.parse import urlunsplit
 
@@ -107,7 +108,11 @@ class BaseCommand(BaseParserMixIn, command.Command):
         :param prog_name: name of the cliff command being executed
         :returns: an `argparse.ArgumentParser` instance
         """
+
         parser = super(BaseCommand, self).get_parser(prog_name)
+
+        # Get correctly formatted help description
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
 
         return self.add_parser_options(parser)
 
