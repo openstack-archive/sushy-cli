@@ -14,16 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from sushycli.base import BaseLister
+from sushycli import base
 
 
-class VersionShow(BaseLister):
-    """Read supported Redfish protocol version of remote agent.
+class VersionShow(base.BaseLister):
+    """Show Redfish protocol version implemented by the BMC
 
-    Implements `sushycli version` command.
+    Implements `sushycli version show` command.
     """
     def get_parser(self, prog_name):
-        """Redfish versioin command parser.
+        """Redfish version command parser.
 
         :param prog_name: name of the cliff command being executed
         :returns: an `argparse.ArgumentParser` instance
