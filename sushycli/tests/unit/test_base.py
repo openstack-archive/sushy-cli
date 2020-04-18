@@ -15,7 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
 
 from sushycli.base import BaseParserMixIn
 from sushycli.tests.unit import base
