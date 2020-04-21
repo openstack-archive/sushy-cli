@@ -15,7 +15,6 @@
 # under the License.
 
 from sushycli import base
-
 from sushycli import base_manager
 
 

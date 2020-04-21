@@ -17,7 +17,6 @@
 import argparse
 import json
 import sys
-
 from urllib.parse import urlsplit
 from urllib.parse import urlunsplit
 
