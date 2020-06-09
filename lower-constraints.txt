@@ -23,7 +23,6 @@ jsonpointer==2.0
 keystoneauth1==4.0.0
 linecache2==1.0.0
 mccabe==0.4.0
-mock==4.0.2
 mox3==1.0.0
 munch==2.5.0
 netifaces==0.10.9
