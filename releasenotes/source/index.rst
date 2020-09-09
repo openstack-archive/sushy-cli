@@ -6,4 +6,5 @@ sushy-cli Release Notes
    :maxdepth: 1
 
    unreleased
+   victoria
    ussuri
