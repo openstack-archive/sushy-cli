@@ -38,7 +38,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2020, OpenStack Foundation'
+copyright = '2020, OpenStack Foundation'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/sushy-cli'
@@ -74,6 +74,6 @@ latex_use_xindy = False
 latex_documents = [
     ('index',
      'doc-sushycli.tex',
-     u'Sushy CLI Documentation',
-     u'OpenStack Foundation', 'manual'),
+     'Sushy CLI Documentation',
+     'OpenStack Foundation', 'manual'),
 ]
