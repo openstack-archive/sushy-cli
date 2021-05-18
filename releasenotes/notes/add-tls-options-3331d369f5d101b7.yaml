@@ -1,5 +1,0 @@
----
-features:
-  - |
-    Adds `--insecure` and `--tls-certificates` options to work around
-    self-signed or invalid TLS certificates sometimes found in BMCs.
